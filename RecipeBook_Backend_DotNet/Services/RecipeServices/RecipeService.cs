@@ -2,36 +2,16 @@
 {
     public class RecipeService : IRecipeService
     {
-        private static List<Recipe> recipes = new List<Recipe>
-        {
-            new Recipe
-            {   Id = 1,
-                Name = "first recipe",
-                Username = "",
-                RecipeCategoryId = 1,
-                RecipeDescription = "",
-                PrepareTime = "",
-                CookTime = "",
-                Rating = 4.9,
-                PublishingStatus = "",
-                Visibility = ""
-            },
-            new Recipe
-            {   Id = 2,
-                Name = "second recipe",
-                Username = "",
-                RecipeCategoryId = 1,
-                RecipeDescription = "",
-                PrepareTime = "",
-                CookTime = "",
-                Rating = 2.3,
-                PublishingStatus = "",
-                Visibility = ""
-            }
-        };
+        private readonly DataContext _context;
 
-        public List<Recipe>? GetAllRecipes()
+        public RecipeService(DataContext context)
         {
+            _context = context;
+        }
+
+        public async Task<List<Recipe>?> GetAllRecipes()
+        {
+            var recipes = await _context.Recipes.ToListAsync();
             if (recipes is null)
             {
                 return null;
@@ -39,9 +19,9 @@
             return recipes;
         }
 
-        public Recipe? GetRecipe(int id)
+        public async Task<Recipe?> GetRecipe(int id)
         {
-            var recipe = recipes.Find(x => x.Id == id);
+            var recipe = await _context.Recipes.FindAsync(id);
             if (recipe is null)
             {
                 return null;
@@ -49,10 +29,13 @@
             return recipe;
         }
 
-        public Recipe? AddRecipe(Recipe recipe)
+        public async Task<Recipe?> AddRecipe(Recipe recipe)
         {
-            recipes.Add(recipe);
-            var frecipe = recipes.Find(x => x.Id == recipe.Id);
+            //recipes.Add(recipe);
+            _context.Recipes.Add(recipe);
+            await _context.SaveChangesAsync();
+
+            var frecipe = await _context.Recipes.FindAsync(recipe.Id);
             if (frecipe is null)
             {
                 return null;
@@ -60,9 +43,9 @@
             return frecipe;
         }
 
-        public Recipe? UpdateRecipe(int id, Recipe request)
+        public async Task<Recipe?> UpdateRecipe(int id, Recipe request)
         {
-            var recipe = recipes.Find(x => x.Id == id);
+            var recipe = await _context.Recipes.FindAsync(id);
             if (recipe is null)
             {
                 return null;
@@ -78,13 +61,15 @@
                 recipe.Rating = request.Rating;
                 recipe.PublishingStatus = request.PublishingStatus;
                 recipe.Visibility = request.Visibility;
+
+                await _context.SaveChangesAsync();
             }
             return recipe;
         }
 
-        public Recipe? DeleteRecipe(int id)
+        public async Task<Recipe?> DeleteRecipe(int id)
         {
-            var recipe = recipes.Find(x => x.Id == id);
+            var recipe = await _context.Recipes.FindAsync(id);
             if (recipe is null)
             {
                 //return NotFound("This recipe doesn't exist.");
@@ -92,7 +77,9 @@
             }
             else
             {
-                recipes.Remove(recipe);
+                //recipes.Remove(recipe);
+                _context.Recipes.Remove(recipe);
+                await _context.SaveChangesAsync();
             }
             //return Ok(recipe);
             return recipe;

@@ -20,7 +20,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Recipe>>> GetAllRecipes()
         {
-            var result = _recipeService.GetAllRecipes();
+            var result = await _recipeService.GetAllRecipes();
             if (result is null)
             {
                 return NotFound("No recipes found.");
@@ -31,7 +31,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Recipe>> GetRecipe(int id)
         {
-            var result = _recipeService.GetRecipe(id);
+            var result = await _recipeService.GetRecipe(id);
             if (result is null)
             {
                 return NotFound("This recipe doesn't exist.");
@@ -42,7 +42,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
         [HttpPost]
         public async Task<ActionResult<Recipe>> AddRecipe(Recipe recipe)
         {
-            var result = _recipeService.AddRecipe(recipe);
+            var result = await _recipeService.AddRecipe(recipe);
             if (result is null)
             {
                 return BadRequest("New recipe not added.");
@@ -53,7 +53,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<Recipe>> UpdateRecipe(int id, Recipe request)
         {
-            var result = _recipeService.UpdateRecipe(id, request);
+            var result = await _recipeService.UpdateRecipe(id, request);
             if (result is null)
             {
                 return NotFound("This recipe doesn't exist.");
@@ -65,7 +65,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Recipe>> DeleteRecipe(int id)
         {
-            var result = _recipeService.DeleteRecipe(id);
+            var result = await _recipeService.DeleteRecipe(id);
             if (result is null)
             {
                 return NotFound("This recipe doesn't exist.");
