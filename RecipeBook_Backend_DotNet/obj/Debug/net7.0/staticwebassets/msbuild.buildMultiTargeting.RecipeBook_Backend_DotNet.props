@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\RecipeBook_Backend_DotNet.props" />
+</Project>
