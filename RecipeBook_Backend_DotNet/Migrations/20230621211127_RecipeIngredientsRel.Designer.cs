@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecipeBook_Backend_DotNet.Data;
 
@@ -10,9 +11,11 @@ using RecipeBook_Backend_DotNet.Data;
 namespace RecipeBook_Backend_DotNet.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230621211127_RecipeIngredientsRel")]
+    partial class RecipeIngredientsRel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -50,25 +53,15 @@ namespace RecipeBook_Backend_DotNet.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("RecipeId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RecipeId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Comments");
                 });
@@ -93,29 +86,6 @@ namespace RecipeBook_Backend_DotNet.Migrations
                     b.HasIndex("RecipeId");
 
                     b.ToTable("Ingredients");
-                });
-
-            modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.Like", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("RecipeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RecipeId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Like");
                 });
 
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.Recipe", b =>
@@ -197,25 +167,6 @@ namespace RecipeBook_Backend_DotNet.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.Comment", b =>
-                {
-                    b.HasOne("RecipeBook_Backend_DotNet.Models.Recipe", "Recipe")
-                        .WithMany("Comments")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RecipeBook_Backend_DotNet.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Recipe");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.Ingredient", b =>
                 {
                     b.HasOne("RecipeBook_Backend_DotNet.Models.Recipe", "Recipe")
@@ -225,25 +176,6 @@ namespace RecipeBook_Backend_DotNet.Migrations
                         .IsRequired();
 
                     b.Navigation("Recipe");
-                });
-
-            modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.Like", b =>
-                {
-                    b.HasOne("RecipeBook_Backend_DotNet.Models.Recipe", "Recipe")
-                        .WithMany("Likes")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RecipeBook_Backend_DotNet.Models.User", "User")
-                        .WithMany("Likes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Recipe");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.Recipe", b =>
@@ -272,17 +204,11 @@ namespace RecipeBook_Backend_DotNet.Migrations
 
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.Recipe", b =>
                 {
-                    b.Navigation("Comments");
-
                     b.Navigation("Ingredients");
-
-                    b.Navigation("Likes");
                 });
 
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.User", b =>
                 {
-                    b.Navigation("Likes");
-
                     b.Navigation("Recipes");
                 });
 #pragma warning restore 612, 618

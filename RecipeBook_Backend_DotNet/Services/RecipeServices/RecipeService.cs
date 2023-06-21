@@ -54,7 +54,7 @@
             {
                 recipe.Name = request.Name;
                 recipe.Username = request.Username;
-                recipe.RecipeCategoryId = request.RecipeCategoryId;
+                //recipe.RecipeCategoryId = request.RecipeCategoryId;
                 recipe.RecipeDescription = request.RecipeDescription;
                 recipe.PrepareTime = request.PrepareTime;
                 recipe.CookTime = request.CookTime;

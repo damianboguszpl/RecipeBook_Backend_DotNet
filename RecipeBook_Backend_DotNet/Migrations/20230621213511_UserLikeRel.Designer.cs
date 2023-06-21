@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecipeBook_Backend_DotNet.Data;
 
@@ -10,9 +11,11 @@ using RecipeBook_Backend_DotNet.Data;
 namespace RecipeBook_Backend_DotNet.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230621213511_UserLikeRel")]
+    partial class UserLikeRel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,15 +106,10 @@ namespace RecipeBook_Backend_DotNet.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("RecipeId")
-                        .HasColumnType("int");
-
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RecipeId");
 
                     b.HasIndex("UserId");
 
@@ -229,19 +227,11 @@ namespace RecipeBook_Backend_DotNet.Migrations
 
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.Like", b =>
                 {
-                    b.HasOne("RecipeBook_Backend_DotNet.Models.Recipe", "Recipe")
-                        .WithMany("Likes")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("RecipeBook_Backend_DotNet.Models.User", "User")
                         .WithMany("Likes")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Recipe");
 
                     b.Navigation("User");
                 });
@@ -275,8 +265,6 @@ namespace RecipeBook_Backend_DotNet.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Ingredients");
-
-                    b.Navigation("Likes");
                 });
 
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.User", b =>
