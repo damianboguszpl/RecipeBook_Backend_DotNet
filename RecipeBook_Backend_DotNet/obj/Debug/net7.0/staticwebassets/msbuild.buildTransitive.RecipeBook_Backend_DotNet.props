@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\RecipeBook_Backend_DotNet.props" />
-</Project>
