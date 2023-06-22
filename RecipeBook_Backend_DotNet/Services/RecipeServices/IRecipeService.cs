@@ -1,11 +1,13 @@
-﻿namespace RecipeBook_Backend_DotNet.Services.RecipeServices
+﻿using RecipeBook_Backend_DotNet.DTOs;
+
+namespace RecipeBook_Backend_DotNet.Services.RecipeServices
 {
     public interface IRecipeService
     {
-        Task<List<Recipe>?> GetAllRecipes();
-        Task<Recipe?> GetRecipe(int id);
-        Task<Recipe?> AddRecipe(Recipe recipe);
+        Task<List<RecipePackedDTO>?> GetAllRecipes();
+        Task<RecipePackedDTO?> GetRecipe(int id);
+        Task<RecipeMinimalDTO?> AddRecipe(RecipeCreateDto request);
         Task<Recipe?> UpdateRecipe(int id, Recipe request);
-        Task<Recipe?> DeleteRecipe(int id);
+        Task<RecipeMinimalDTO?> DeleteRecipe(int id);
     }
 }
