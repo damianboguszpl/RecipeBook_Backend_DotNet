@@ -1,4 +1,10 @@
-﻿namespace RecipeBook_Backend_DotNet.DTOs
+﻿using RecipeBook_Backend_DotNet.DTOs.CategoryDTOs;
+using RecipeBook_Backend_DotNet.DTOs.CommentDTOs;
+using RecipeBook_Backend_DotNet.DTOs.IngredientDTOs;
+using RecipeBook_Backend_DotNet.DTOs.LikeDTOs;
+using RecipeBook_Backend_DotNet.DTOs.UserDTOs;
+
+namespace RecipeBook_Backend_DotNet.DTOs.RecipeDTOs
 {
     public record struct RecipePackedDTO(
         int Id,
@@ -6,7 +12,7 @@
         string RecipeDescription,
         string PrepareTime,
         string CookTime,
-        double Rating,
+        int AuthorsRating,
         string PublishingStatus,
         string Visibility,
         UserMinimalDTO User,

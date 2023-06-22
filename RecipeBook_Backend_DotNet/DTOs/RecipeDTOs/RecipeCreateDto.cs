@@ -1,14 +1,14 @@
 ﻿using System.Net;
 
-namespace RecipeBook_Backend_DotNet.DTOs
+namespace RecipeBook_Backend_DotNet.DTOs.RecipeDTOs
 {
-    public record struct RecipeCreateDto( 
-        string Name, 
+    public record struct RecipeCreateDto(
+        string Name,
         string Username,
         string RecipeDescription,
         string PrepareTime,
-        string CookTime, 
-        float Rating,
+        string CookTime,
+        int AuthorsRating,
         string PublishingStatus,
         string Visibility,
         int UserId,

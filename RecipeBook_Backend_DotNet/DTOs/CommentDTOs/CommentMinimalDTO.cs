@@ -1,4 +1,4 @@
-﻿namespace RecipeBook_Backend_DotNet.DTOs
+﻿namespace RecipeBook_Backend_DotNet.DTOs.CommentDTOs
 {
     public record struct CommentMinimalDTO(
         int Id,
