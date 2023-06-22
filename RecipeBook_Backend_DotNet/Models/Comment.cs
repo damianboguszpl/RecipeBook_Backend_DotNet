@@ -6,7 +6,7 @@
         public string Text { get; set; } = String.Empty;
         public string Username { get; set; } = String.Empty;
 
-        public User User { get; set; }
-        public Recipe Recipe { get; set; }
+        public required User User { get; set; }
+        public required Recipe Recipe { get; set; }
     }
 }
