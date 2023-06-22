@@ -9,7 +9,7 @@
         public string RecipeDescription { get; set; } = String.Empty;
         public string PrepareTime { get; set; } = String.Empty;
         public string CookTime { get; set; } = String.Empty;
-        public float Rating { get; set; }
+        public int AuthorsRating { get; set; }
         public string PublishingStatus { get; set; } = String.Empty;
         public string Visibility { get; set; } = String.Empty;
 

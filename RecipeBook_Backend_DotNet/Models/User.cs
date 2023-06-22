@@ -7,8 +7,8 @@
         public string Username { get; set; } = String.Empty;
         public string Password { get; set; } = String.Empty;
 
-        public List<Recipe> Recipes { get; set; }
+        public List<Recipe>? Recipes { get; set; }
         //public List<Comment> Comments { get; set; }
-        public List<Like> Likes { get; set; }
+        public List<Like>? Likes { get; set; }
     }
 }
