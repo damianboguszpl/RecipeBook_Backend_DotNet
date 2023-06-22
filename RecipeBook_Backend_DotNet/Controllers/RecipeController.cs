@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using RecipeBook_Backend_DotNet.DTOs;
+using RecipeBook_Backend_DotNet.DTOs.RecipeDTOs;
 using RecipeBook_Backend_DotNet.Models;
 using RecipeBook_Backend_DotNet.Services.RecipeServices;
 using System.Net;
@@ -52,7 +52,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Recipe>> UpdateRecipe(int id, Recipe request)
+        public async Task<ActionResult<RecipeMinimalDTO>> UpdateRecipe(int id, RecipeUpdateDTO request)
         {
             var result = await _recipeService.UpdateRecipe(id, request);
             if (result is null)

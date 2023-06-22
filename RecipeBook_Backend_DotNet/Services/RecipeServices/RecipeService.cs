@@ -1,7 +1,9 @@
-﻿using Azure.Core;
-using RecipeBook_Backend_DotNet.DTOs;
-using RecipeBook_Backend_DotNet.Models;
-using System.Xml.Linq;
+﻿using RecipeBook_Backend_DotNet.DTOs.CategoryDTOs;
+using RecipeBook_Backend_DotNet.DTOs.CommentDTOs;
+using RecipeBook_Backend_DotNet.DTOs.IngredientDTOs;
+using RecipeBook_Backend_DotNet.DTOs.LikeDTOs;
+using RecipeBook_Backend_DotNet.DTOs.RecipeDTOs;
+using RecipeBook_Backend_DotNet.DTOs.UserDTOs;
 
 namespace RecipeBook_Backend_DotNet.Services.RecipeServices
 {
@@ -68,7 +70,7 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
                     {
                         Id = comment.Id,
                         Text = comment.Text,
-                        Username = userDTO.Username
+                        User = userDTO
                     })
                     .ToList();
 
@@ -79,7 +81,7 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
                     RecipeDescription = recipe.RecipeDescription,
                     PrepareTime = recipe.PrepareTime,
                     CookTime = recipe.CookTime,
-                    Rating = recipe.Rating,
+                    AuthorsRating = recipe.AuthorsRating,
                     PublishingStatus = recipe.PublishingStatus,
                     Visibility = recipe.Visibility,
                     Category = categoryDTO,
@@ -141,7 +143,7 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
                 {
                     Id = comment.Id,
                     Text = comment.Text,
-                    Username = userDTO.Username
+                    User = userDTO
                 })
                 .ToList();
 
@@ -152,7 +154,7 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
                 RecipeDescription = recipe.RecipeDescription,
                 PrepareTime = recipe.PrepareTime,
                 CookTime = recipe.CookTime,
-                Rating = recipe.Rating,
+                AuthorsRating = recipe.AuthorsRating,
                 PublishingStatus = recipe.PublishingStatus,
                 Visibility = recipe.Visibility,
                 Category = categoryDTO,
@@ -172,14 +174,12 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
             {
                 return null;
             }
-            //newRecipe.Category = category;
 
             var user = await _context.Users.FindAsync(request.UserId);
             if (user is null)
             {
                 return null;
             }
-            //newRecipe.User = user;
 
             var newRecipe = new Recipe
             {
@@ -188,28 +188,25 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
                 RecipeDescription = request.RecipeDescription,
                 PrepareTime = request.PrepareTime,
                 CookTime = request.CookTime,
-                Rating = request.Rating,
+                AuthorsRating = request.AuthorsRating,
                 PublishingStatus = request.PublishingStatus,
                 Visibility = request.Visibility,
                 Category = category,
                 User = user
             };
 
-            //recipes.Add(recipe);
-
             _context.Recipes.Add(newRecipe);
             await _context.SaveChangesAsync();
 
-            var frecipe = await _context.Recipes.FindAsync(newRecipe.Id);
-            if (frecipe is null)
-            {
+            var fRecipe = await _context.Recipes.FindAsync(newRecipe.Id);
+            if (fRecipe is null)
                 return null;
-            }
-            var recipeDTO = new RecipeMinimalDTO { Id = frecipe.Id };
+
+            var recipeDTO = new RecipeMinimalDTO { Id = fRecipe.Id };
             return recipeDTO;
         }
 
-        public async Task<Recipe?> UpdateRecipe(int id, Recipe request) // TODO: implement DTOs
+        public async Task<RecipeMinimalDTO?> UpdateRecipe(int id, RecipeUpdateDTO request) // TODO: implement DTOs
         {
             var recipe = await _context.Recipes.FindAsync(id);
             if (recipe is null)
@@ -219,17 +216,19 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
             else
             {
                 recipe.Name = request.Name;
-                recipe.Username = request.Username;
+                recipe.CategoryId = request.CategoryId;
                 recipe.RecipeDescription = request.RecipeDescription;
                 recipe.PrepareTime = request.PrepareTime;
                 recipe.CookTime = request.CookTime;
-                recipe.Rating = request.Rating;
+                recipe.AuthorsRating = request.AuthorsRating;
                 recipe.PublishingStatus = request.PublishingStatus;
                 recipe.Visibility = request.Visibility;
 
                 await _context.SaveChangesAsync();
             }
-            return recipe;
+
+            var recipeDTO = new RecipeMinimalDTO { Id = recipe.Id };
+            return recipeDTO;
         }
 
         public async Task<RecipeMinimalDTO?> DeleteRecipe(int id)
@@ -242,6 +241,14 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
             else
             {
                 _context.Recipes.Remove(recipe);
+
+                // Remove Comments
+
+                // Remove Ingredients
+
+                // Remove Likes
+
+
                 await _context.SaveChangesAsync();
             }
 
