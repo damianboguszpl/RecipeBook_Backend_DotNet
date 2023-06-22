@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RecipeBook_Backend_DotNet.DTOs;
 using RecipeBook_Backend_DotNet.Models;
 using RecipeBook_Backend_DotNet.Services.RecipeServices;
 using System.Net;
@@ -18,7 +19,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Recipe>>> GetAllRecipes()
+        public async Task<ActionResult<List<RecipeMinimalDTO>>> GetAllRecipes()
         {
             var result = await _recipeService.GetAllRecipes();
             if (result is null)
@@ -29,7 +30,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Recipe>> GetRecipe(int id)
+        public async Task<ActionResult<RecipePackedDTO>> GetRecipe(int id)
         {
             var result = await _recipeService.GetRecipe(id);
             if (result is null)
@@ -40,9 +41,9 @@ namespace RecipeBook_Backend_DotNet.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Recipe>> AddRecipe(Recipe recipe)
+        public async Task<ActionResult<RecipeMinimalDTO>> AddRecipe(RecipeCreateDto request)
         {
-            var result = await _recipeService.AddRecipe(recipe);
+            var result = await _recipeService.AddRecipe(request);
             if (result is null)
             {
                 return BadRequest("New recipe not added.");
@@ -63,7 +64,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Recipe>> DeleteRecipe(int id)
+        public async Task<ActionResult<RecipeMinimalDTO>> DeleteRecipe(int id)
         {
             var result = await _recipeService.DeleteRecipe(id);
             if (result is null)
