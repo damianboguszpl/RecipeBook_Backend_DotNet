@@ -3,6 +3,11 @@ global using Microsoft.EntityFrameworkCore;
 global using RecipeBook_Backend_DotNet.Data;
 
 using RecipeBook_Backend_DotNet.Services.RecipeServices;
+using RecipeBook_Backend_DotNet.Services.IngredientServices;
+using RecipeBook_Backend_DotNet.Services.CategoryServices;
+using RecipeBook_Backend_DotNet.Services.LikeServices;
+using RecipeBook_Backend_DotNet.Services.CommentServices;
+using RecipeBook_Backend_DotNet.Services.UserServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +19,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IRecipeService, RecipeService>();
+builder.Services.AddScoped<IIngredientService, IngredientService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ILikeService, LikeService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddDbContext<DataContext>();
 
 var app = builder.Build();
