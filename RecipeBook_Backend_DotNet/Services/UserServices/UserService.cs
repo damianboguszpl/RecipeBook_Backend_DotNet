@@ -1,10 +1,6 @@
-﻿using Azure.Core;
-using RecipeBook_Backend_DotNet.DTOs.CategoryDTOs;
-using RecipeBook_Backend_DotNet.DTOs.IngredientDTOs;
-using RecipeBook_Backend_DotNet.DTOs.LikeDTOs;
+﻿using RecipeBook_Backend_DotNet.DTOs.LikeDTOs;
 using RecipeBook_Backend_DotNet.DTOs.RecipeDTOs;
 using RecipeBook_Backend_DotNet.DTOs.UserDTOs;
-using RecipeBook_Backend_DotNet.Models;
 
 namespace RecipeBook_Backend_DotNet.Services.UserServices
 {
@@ -49,42 +45,27 @@ namespace RecipeBook_Backend_DotNet.Services.UserServices
 
         public async Task<UserPackedDTO?> GetUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users
+                .Include(u => u.Recipes)
+                .Include(u => u.Likes)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
             if (user is null)
                 return null;
 
-            var recipes = await _context.Recipes.
-                Where(recipe => recipe.UserId == user.Id)
-                .ToListAsync();
-
-            List<RecipeMinimalDTO> recipesDTO = recipes.Select(recipe => new RecipeMinimalDTO
-            {
-                Id = recipe.Id
-            }).ToList();
-
-            var likes = await _context.Likes
-                    .Where(like => like.UserId == user.Id)
-                    .ToListAsync();
-
             UserMinimalDTO userDTO = new() { Id = user.Id, Username = user.Username };
 
-            List<LikeMinimalDTO> likesDTO = new();
-
-            foreach (var like in likes)
+            List<RecipeMinimalDTO> recipesDTO = user.Recipes?.Select(recipe => new RecipeMinimalDTO
             {
-                var recipe = _context.Recipes.
-                    FirstOrDefaultAsync(recipe => recipe.Id == like.RecipeId);
-                RecipeMinimalDTO recipeDTO = new() {
-                    Id = recipe.Id
-                };
+                Id = recipe.Id
+            }).ToList() ?? new List<RecipeMinimalDTO>();
 
-                likesDTO.Add( new LikeMinimalDTO
-                {
-                    Id = like.Id,
-                    User = userDTO,
-                    Recipe = recipeDTO
-                });
-            }
+            List<LikeMinimalDTO> likesDTO = user.Likes?.Select(like => new LikeMinimalDTO
+            {
+                Id = like.Id,
+                UserId = like.UserId,
+                RecipeId = like.RecipeId
+            }).ToList() ?? new List<LikeMinimalDTO>();
 
             return new UserPackedDTO
             {
