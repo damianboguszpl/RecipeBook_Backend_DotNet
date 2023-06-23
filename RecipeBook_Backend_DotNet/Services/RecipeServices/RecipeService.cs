@@ -20,59 +20,45 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
         {
             List<RecipePackedDTO> recipesDTO = new();
 
-            var recipes = await _context.Recipes.ToListAsync();
+            var recipes = await _context.Recipes
+                .Include(c => c.User)
+                .Include(c => c.Ingredients)
+                .Include(c => c.Category)
+                .Include(c => c.Likes)
+                .Include(c => c.Comments)
+                .ToListAsync();
 
             if (recipes is null)
                 return null;
 
             foreach (var recipe in recipes)
             {
-                var category = await _context.Categories.FindAsync(recipe.CategoryId);
-                if (category is null)
-                    return null;
-
-                recipe.Likes = await _context.Likes
-                    .Where(l => l.Recipe.Id == recipe.Id)
-                    .ToListAsync();
-                recipe.Comments = await _context.Comments
-                    .Where(l => l.Recipe.Id == recipe.Id)
-                    .ToListAsync();
-
-                var user = await _context.Users.FindAsync(recipe.UserId);
-                if (user is null)
-                    return null;
-
-                UserMinimalDTO userDTO = new() { Id = user.Id, Username = user.Username};
-                CategoryMinimalDTO categoryDTO = new() { Id = category.Id, Name = category.Name };
+                UserMinimalDTO userDTO = new() { Id = recipe.User.Id, Username = recipe.User.Username};
+                CategoryMinimalDTO categoryDTO = new() { Id = recipe.Category.Id, Name = recipe.Category.Name };
                 RecipeMinimalDTO recipeDTO = new() { Id = recipe.Id };
 
-                List<LikeMinimalDTO> likesDTO = recipe.Likes.Select(like => new LikeMinimalDTO
+                List<LikeMinimalDTO> likesDTO = recipe.Likes?.Select(like => new LikeMinimalDTO
                 {
                     Id = like.Id,
-                    Recipe = recipeDTO,
-                    User = userDTO
-                }).ToList();
+                    UserId = like.UserId,
+                    RecipeId = like.RecipeId
+                }).ToList() ?? new List<LikeMinimalDTO>();
 
-                List<IngredientMinimalDTO> ingredientsDTO = (
-                    await _context.Ingredients
-                    .Where(l => l.Recipe.Id == recipe.Id)
-                    .ToListAsync()
-                    )
-                    ?.Select(ingredient => new IngredientMinimalDTO
+                List<IngredientMinimalDTO> ingredientsDTO = recipe.Ingredients?.Select(ingredient => new IngredientMinimalDTO
                     {
                         Id = ingredient.Id,
                         Name = ingredient.Name
                     })
                     .ToList() ?? new List<IngredientMinimalDTO>();
 
-                List<CommentMinimalDTO> commentsDTO = recipe.Comments
+                List<CommentMinimalDTO> commentsDTO = recipe.Comments?
                     .Select(comment => new CommentMinimalDTO
                     {
                         Id = comment.Id,
                         Text = comment.Text,
                         User = userDTO
                     })
-                    .ToList();
+                    .ToList() ?? new List<CommentMinimalDTO>();
 
                 recipesDTO.Add(new RecipePackedDTO
                 {
@@ -96,56 +82,42 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
 
         public async Task<RecipePackedDTO?> GetRecipe(int id)
         {
-            var recipe = await _context.Recipes.FindAsync(id);
-            if (recipe is null)
+            var recipe = await _context.Recipes
+                .Include(c => c.User)
+                .Include(c => c.Ingredients)
+                .Include(c => c.Category)
+                .Include(c => c.Likes)
+                .Include(c => c.Comments)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (recipe == null)
                 return null;
 
-            var category = await _context.Categories.FindAsync(recipe.CategoryId);
-            if (category is null)
-                return null;
-
-            recipe.Likes = await _context.Likes
-                .Where(l => l.Recipe.Id == recipe.Id)
-                .ToListAsync();
-            recipe.Comments = await _context.Comments
-                .Where(l => l.Recipe.Id == recipe.Id)
-                .ToListAsync();
-
-            var user = await _context.Users.FindAsync(recipe.UserId);
-            if (user is null)
-                return null;
-
-            UserMinimalDTO userDTO = new() { Id = user.Id, Username = user.Username };
-            CategoryMinimalDTO categoryDTO = new() { Id = category.Id, Name = category.Name };
+            UserMinimalDTO userDTO = new() { Id = recipe.User.Id, Username = recipe.User.Username };
+            CategoryMinimalDTO categoryDTO = new() { Id = recipe.Category.Id, Name = recipe.Category.Name };
             RecipeMinimalDTO recipeMinimalDTO = new() { Id = recipe.Id };
 
-            List<LikeMinimalDTO> likesDTO = recipe.Likes.Select(like => new LikeMinimalDTO
+            List<LikeMinimalDTO> likesDTO = recipe.Likes?.Select(like => new LikeMinimalDTO
             {
                 Id = like.Id,
-                Recipe = recipeMinimalDTO,
+                UserId = like.UserId,
+                RecipeId = like.RecipeId
+            }).ToList() ?? new List<LikeMinimalDTO>();
+
+            List<IngredientMinimalDTO> ingredientsDTO = recipe.Ingredients?.Select(ingredient => new IngredientMinimalDTO
+            {
+                Id = ingredient.Id,
+                Name = ingredient.Name
+            })
+            .ToList() ?? new List<IngredientMinimalDTO>();
+
+            List<CommentMinimalDTO> commentsDTO = recipe.Comments?.Select(comment => new CommentMinimalDTO
+            {
+                Id = comment.Id,
+                Text = comment.Text,
                 User = userDTO
-            }).ToList();
-
-            List<IngredientMinimalDTO> ingredientsDTO = (
-                await _context.Ingredients
-                .Where(l => l.Recipe.Id == recipe.Id)
-                .ToListAsync()
-                )
-                ?.Select(ingredient => new IngredientMinimalDTO
-                {
-                    Id = ingredient.Id,
-                    Name = ingredient.Name
-                })
-                .ToList() ?? new List<IngredientMinimalDTO>();
-
-            List<CommentMinimalDTO> commentsDTO = recipe.Comments
-                .Select(comment => new CommentMinimalDTO
-                {
-                    Id = comment.Id,
-                    Text = comment.Text,
-                    User = userDTO
-                })
-                .ToList();
+            })
+            .ToList() ?? new List<CommentMinimalDTO>();
 
             var recipeDTO = new RecipePackedDTO
             {
@@ -170,16 +142,14 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
         public async Task<RecipeMinimalDTO?> AddRecipe(RecipeCreateDto request)
         {
             var category = await _context.Categories.FindAsync(request.CategoryId);
+
             if (category is null)
-            {
                 return null;
-            }
 
             var user = await _context.Users.FindAsync(request.UserId);
+
             if (user is null)
-            {
                 return null;
-            }
 
             var newRecipe = new Recipe
             {
@@ -198,11 +168,7 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
             _context.Recipes.Add(newRecipe);
             await _context.SaveChangesAsync();
 
-            var fRecipe = await _context.Recipes.FindAsync(newRecipe.Id);
-            if (fRecipe is null)
-                return null;
-
-            var recipeDTO = new RecipeMinimalDTO { Id = fRecipe.Id };
+            var recipeDTO = new RecipeMinimalDTO { Id = newRecipe.Id };
             return recipeDTO;
         }
 
@@ -210,9 +176,7 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
         {
             var recipe = await _context.Recipes.FindAsync(id);
             if (recipe is null)
-            {
                 return null;
-            }
             else
             {
                 recipe.Name = request.Name;
@@ -225,19 +189,17 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
                 recipe.Visibility = request.Visibility;
 
                 await _context.SaveChangesAsync();
-            }
 
-            var recipeDTO = new RecipeMinimalDTO { Id = recipe.Id };
-            return recipeDTO;
+                var recipeDTO = new RecipeMinimalDTO { Id = recipe.Id };
+                return recipeDTO;
+            }
         }
 
         public async Task<RecipeMinimalDTO?> DeleteRecipe(int id)
         {
             var recipe = await _context.Recipes.FindAsync(id);
             if (recipe is null)
-            {
                 return null;
-            }
             else
             {
                 _context.Recipes.Remove(recipe);
