@@ -5,7 +5,7 @@ namespace RecipeBook_Backend_DotNet.DTOs.LikeDTOs
 {
     public record struct LikeMinimalDTO(
         int Id,
-        UserMinimalDTO User,
-        RecipeMinimalDTO Recipe
+        int UserId,
+        int RecipeId
         );
 }
