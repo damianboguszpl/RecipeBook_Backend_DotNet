@@ -1,5 +1,4 @@
 ﻿using RecipeBook_Backend_DotNet.DTOs.CategoryDTOs;
-using RecipeBook_Backend_DotNet.DTOs.IngredientDTOs;
 using RecipeBook_Backend_DotNet.DTOs.RecipeDTOs;
 
 namespace RecipeBook_Backend_DotNet.Services.CategoryServices
@@ -21,7 +20,7 @@ namespace RecipeBook_Backend_DotNet.Services.CategoryServices
             var category = await _context.Categories.
                 FirstOrDefaultAsync(category => category.Name == request.Name);
             
-            if (category == null)
+            if (category is null)
             {
                 var newCategory = new Category { 
                     Name = request.Name, 
@@ -42,16 +41,15 @@ namespace RecipeBook_Backend_DotNet.Services.CategoryServices
 
         public async Task<CategoryMinimalDTO?> DeleteCategory(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _context.Categories
+                .Include(c => c.Recipes)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
             if (category is null)
                 return null;
             else
             {
-                var recipes = await _context.Recipes
-                    .Where(recipe => recipe.CategoryId == category.Id).
-                    ToListAsync();
-
-                if (recipes.Count < 1)
+                if (category.Recipes != null && category.Recipes.Count < 1)
                 {
                     _context.Categories.Remove(category);
                     await _context.SaveChangesAsync();
@@ -66,20 +64,22 @@ namespace RecipeBook_Backend_DotNet.Services.CategoryServices
 
         public async Task<List<CategoryPackedDTO>?> GetAllCategories()
         {
-            var categories = await _context.Categories.ToListAsync();
+            List<CategoryPackedDTO> categoriesDTO = new(); 
+
+            var categories = await _context.Categories
+                .Include(c => c.Recipes)
+                .ToListAsync();
+            
             if (categories is null)
                 return null;
 
-            List<CategoryPackedDTO> categoriesDTO = new();
             foreach (var category in categories)
             {
-                var recipesDTO = await _context.Recipes
-                    .Where(recipe => recipe.CategoryId == category.Id)
-                    .Select(recipe => new RecipeMinimalDTO
+                List<RecipeMinimalDTO> recipesDTO = category.Recipes?.Select(recipe => new RecipeMinimalDTO
                     {
                         Id = recipe.Id
                     })
-                    .ToListAsync();
+                    .ToList() ?? new List<RecipeMinimalDTO>();
 
                 categoriesDTO.Add(new CategoryPackedDTO
                 {
@@ -93,17 +93,17 @@ namespace RecipeBook_Backend_DotNet.Services.CategoryServices
 
         public async Task<CategoryPackedDTO?> GetCategory(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category is null)
-                return null;
-            var recipes = await _context.Recipes.
-                Where(recipe => recipe.CategoryId == category.Id)
-                .ToListAsync();
+            var category = await _context.Categories
+                .Include(c => c.Recipes)
+                .FirstOrDefaultAsync(c => c.Id == id);
 
-            List<RecipeMinimalDTO> recipesDTO = recipes.Select( recipe => new RecipeMinimalDTO
+            if (category is null) 
+                return null;
+
+            List<RecipeMinimalDTO> recipesDTO = category.Recipes?.Select( recipe => new RecipeMinimalDTO
             {
                 Id = recipe.Id
-            }).ToList();
+            }).ToList() ?? new List<RecipeMinimalDTO>();
 
             return new CategoryPackedDTO
             {
