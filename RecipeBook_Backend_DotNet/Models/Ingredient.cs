@@ -1,4 +1,6 @@
-﻿namespace RecipeBook_Backend_DotNet.Models
+﻿using System.Text.Json.Serialization;
+
+namespace RecipeBook_Backend_DotNet.Models
 {
     public class Ingredient
     {
@@ -6,6 +8,7 @@
         public string Name { get; set; } = String.Empty;
 
         public int RecipeID { get; set; }
+        [JsonIgnore]
         public required Recipe Recipe { get; set; }
     }
 }
