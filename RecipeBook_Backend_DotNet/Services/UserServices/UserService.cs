@@ -13,7 +13,7 @@ namespace RecipeBook_Backend_DotNet.Services.UserServices
             _context = context;
         }
 
-        public async Task<UserMinimalDTO?> AddUser(UserCreateDTO request)
+        /*public async Task<UserMinimalDTO?> AddUser(UserCreateDTO request)
         {
             if(request.Username is null || request.Password is null)
                 return null;
@@ -41,7 +41,7 @@ namespace RecipeBook_Backend_DotNet.Services.UserServices
             }
             else
                 return null;
-        }
+        }*/
 
         public async Task<UserPackedDTO?> GetUser(int id)
         {

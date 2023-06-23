@@ -1,16 +1,19 @@
 ﻿using RecipeBook_Backend_DotNet.DTOs.CommentDTOs;
 using RecipeBook_Backend_DotNet.DTOs.RecipeDTOs;
 using RecipeBook_Backend_DotNet.DTOs.UserDTOs;
+using System.Security.Claims;
 
 namespace RecipeBook_Backend_DotNet.Services.CommentServices
 {
     public class CommentService : ICommentService
     {
         private readonly DataContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CommentService(DataContext context)
+        public CommentService(DataContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<CommentMinimalDTO?> AddComment(CommentCreateDTO request)
         {
@@ -55,6 +58,19 @@ namespace RecipeBook_Backend_DotNet.Services.CommentServices
                 return null;
             else
             {
+                if(_httpContextAccessor.HttpContext != null)
+                {
+                    var currentUserRole = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                    if (currentUserRole != "admin")
+                    {
+                        var currentUserId = _httpContextAccessor.HttpContext.User.FindFirstValue("Id");
+                        if(currentUserId != comment.UserId.ToString())
+                        {
+                            return null; // Forbidden: user has no rights to delete this comment because it's not his comment
+                        }
+                    }
+                }
+
                 _context.Comments.Remove(comment);
                 await _context.SaveChangesAsync();
             }

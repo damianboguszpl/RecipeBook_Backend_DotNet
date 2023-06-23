@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RecipeBook_Backend_DotNet.DTOs.IngredientDTOs;
 using RecipeBook_Backend_DotNet.DTOs.UserDTOs;
 using RecipeBook_Backend_DotNet.Services.UserServices;
@@ -16,7 +17,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             _userService = userService;
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}"), Authorize]
         public async Task<ActionResult<UserPackedDTO>> GetUser(int id)
         {
             var result = await _userService.GetUser(id);
@@ -27,7 +28,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        /*[HttpPost]
         public async Task<ActionResult<UserMinimalDTO>> AddUser(UserCreateDTO request)
         {
             var result = await _userService.AddUser(request);
@@ -37,6 +38,6 @@ namespace RecipeBook_Backend_DotNet.Controllers
             }
             return Ok(result);
 
-        }
+        }*/
     }
 }

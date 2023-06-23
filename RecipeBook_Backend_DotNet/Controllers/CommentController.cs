@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RecipeBook_Backend_DotNet.DTOs.CommentDTOs;
 using RecipeBook_Backend_DotNet.DTOs.IngredientDTOs;
 using RecipeBook_Backend_DotNet.Services.CommentServices;
 using RecipeBook_Backend_DotNet.Services.UserServices;
+using System.Security.Claims;
 
 namespace RecipeBook_Backend_DotNet.Controllers
 {
@@ -29,7 +31,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost, Authorize]
         public async Task<ActionResult<CommentMinimalDTO>> AddComment(CommentCreateDTO request)
         {
             var result = await _commentService.AddComment(request);
@@ -40,7 +42,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize]
         public async Task<ActionResult<CommentMinimalDTO>> DeleteComment(int id)
         {
             var result = await _commentService.DeleteComment(id);

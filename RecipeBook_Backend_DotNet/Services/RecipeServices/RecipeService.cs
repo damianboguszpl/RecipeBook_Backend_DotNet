@@ -1,19 +1,24 @@
-﻿using RecipeBook_Backend_DotNet.DTOs.CategoryDTOs;
+﻿using Microsoft.AspNetCore.Http;
+using RecipeBook_Backend_DotNet.DTOs.CategoryDTOs;
 using RecipeBook_Backend_DotNet.DTOs.CommentDTOs;
 using RecipeBook_Backend_DotNet.DTOs.IngredientDTOs;
 using RecipeBook_Backend_DotNet.DTOs.LikeDTOs;
 using RecipeBook_Backend_DotNet.DTOs.RecipeDTOs;
 using RecipeBook_Backend_DotNet.DTOs.UserDTOs;
+using RecipeBook_Backend_DotNet.Models;
+using System.Security.Claims;
 
 namespace RecipeBook_Backend_DotNet.Services.RecipeServices
 {
     public class RecipeService : IRecipeService
     {
         private readonly DataContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public RecipeService(DataContext context)
+        public RecipeService(DataContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<List<RecipePackedDTO>?> GetAllRecipes()
@@ -179,6 +184,19 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
                 return null;
             else
             {
+                if (_httpContextAccessor.HttpContext != null)
+                {
+                    var currentUserRole = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                    if (currentUserRole != "admin")
+                    {
+                        var currentUserId = _httpContextAccessor.HttpContext.User.FindFirstValue("Id");
+                        if (currentUserId != recipe.UserId.ToString())
+                        {
+                            return null; // Forbidden: user has no rights to edit this recipe because it's not his recipe
+                        }
+                    }
+                }
+
                 recipe.Name = request.Name;
                 recipe.CategoryId = request.CategoryId;
                 recipe.RecipeDescription = request.RecipeDescription;
@@ -197,25 +215,63 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
 
         public async Task<RecipeMinimalDTO?> DeleteRecipe(int id)
         {
-            var recipe = await _context.Recipes.FindAsync(id);
+            //var recipe = await _context.Recipes.FindAsync(id);
+            var recipe = await _context.Recipes
+                .Include(c => c.Ingredients)
+                .Include(c => c.Likes)
+                .Include(c => c.Comments)
+                .FirstOrDefaultAsync(r => r.Id == id);
             if (recipe is null)
                 return null;
             else
             {
-                _context.Recipes.Remove(recipe);
+                if (_httpContextAccessor.HttpContext != null)
+                {
+                    var currentUserRole = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                    if (currentUserRole != "admin")
+                    {
+                        var currentUserId = _httpContextAccessor.HttpContext.User.FindFirstValue("Id");
+                        if (currentUserId != recipe.UserId.ToString())
+                        {
+                            return null; // Forbidden: user has no rights to edit this recipe because it's not his recipe
+                        }
+                    }
+                }
 
                 // Remove Comments
+                if(recipe.Comments != null && recipe.Comments.Count > 0)
+                {
+                    foreach (var comment in recipe.Comments)
+                    {
+                        _context.Comments.Remove(comment);
+                    }
+                }
 
                 // Remove Ingredients
+                if (recipe.Ingredients != null && recipe.Ingredients.Count > 0)
+                {
+                    foreach (var ingredient in recipe.Ingredients)
+                    {
+                        _context.Ingredients.Remove(ingredient);
+                    }
+                }
 
                 // Remove Likes
+                if (recipe.Likes != null && recipe.Likes.Count > 0)
+                {
+                    foreach (var like in recipe.Likes)
+                    {
+                        _context.Likes.Remove(like);
+                    }
+                }
 
+                // Remove Recip itself
+                _context.Recipes.Remove(recipe);
 
                 await _context.SaveChangesAsync();
+                var recipeDTO = new RecipeMinimalDTO { Id = recipe.Id };
+                return recipeDTO;
             }
-
-            var recipeDTO = new RecipeMinimalDTO { Id = recipe.Id };
-            return recipeDTO;
         }
     }
 }

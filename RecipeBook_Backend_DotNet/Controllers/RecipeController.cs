@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RecipeBook_Backend_DotNet.DTOs.RecipeDTOs;
 using RecipeBook_Backend_DotNet.Models;
@@ -40,7 +41,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost, Authorize]
         public async Task<ActionResult<RecipeMinimalDTO>> AddRecipe(RecipeCreateDto request)
         {
             var result = await _recipeService.AddRecipe(request);
@@ -51,7 +52,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id}"), Authorize]
         public async Task<ActionResult<RecipeMinimalDTO>> UpdateRecipe(int id, RecipeUpdateDTO request)
         {
             var result = await _recipeService.UpdateRecipe(id, request);
@@ -63,7 +64,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize]
         public async Task<ActionResult<RecipeMinimalDTO>> DeleteRecipe(int id)
         {
             var result = await _recipeService.DeleteRecipe(id);

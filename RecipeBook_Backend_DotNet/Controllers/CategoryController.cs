@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RecipeBook_Backend_DotNet.DTOs.CategoryDTOs;
 using RecipeBook_Backend_DotNet.Services.CategoryServices;
 
@@ -36,7 +37,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost, Authorize(Roles ="admin")]
         public async Task<ActionResult<CategoryMinimalDTO>> AddCategory(CategoryCreateDTO request)
         {
             var result = await _categoryService.AddCategory(request);
@@ -47,7 +48,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<CategoryMinimalDTO>> DeleteCategory(int id)
         {
             var result = await _categoryService.DeleteCategory(id);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RecipeBook_Backend_DotNet.DTOs.IngredientDTOs;
 using RecipeBook_Backend_DotNet.Services.IngredientServices;
 
@@ -47,8 +48,8 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<IngredientMinimalDTO>> AddRecipe(IngredientCreateDTO request)
+        [HttpPost, Authorize]
+        public async Task<ActionResult<IngredientMinimalDTO>> AddIngredient(IngredientCreateDTO request)
         {
             var result = await _ingredientService.AddIngredient(request);
             if (result is null)
@@ -58,8 +59,8 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<IngredientMinimalDTO>> DeleteRecipe(int id)
+        [HttpDelete("{id}"), Authorize]
+        public async Task<ActionResult<IngredientMinimalDTO>> DeleteIngredient(int id)
         {
             var result = await _ingredientService.DeleteIngredient(id);
             if (result is null)

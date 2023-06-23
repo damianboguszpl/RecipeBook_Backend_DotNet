@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RecipeBook_Backend_DotNet.DTOs.LikeDTOs;
 using RecipeBook_Backend_DotNet.Services.LikeServices;
 
@@ -15,7 +16,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             _likeService = likeService;
         }
 
-        [HttpPost]
+        [HttpPost, Authorize]
         public async Task<ActionResult<LikeMinimalDTO>> AddCategory(LikeCreateDTO request)
         {
             var result = await _likeService.LikeOrDislike(request);
