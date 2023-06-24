@@ -10,15 +10,27 @@ namespace RecipeBook_Backend_DotNet.Controllers
     public class IngredientController : ControllerBase
     {
         private readonly IIngredientService _ingredientService;
+
         public IngredientController(IIngredientService ingredientService)
         {
             _ingredientService = ingredientService;
         }
 
-        [HttpGet]
+        [HttpGet, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<IngredientPackedDTO>>> GetAllIngredients()
         {
             var result = await _ingredientService.GetAllIngredients();
+            if (result is null)
+            {
+                return NotFound("No ingredients found.");
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("public")]
+        public async Task<ActionResult<List<IngredientPackedDTO>>> GetAllPublicIngredients()
+        {
+            var result = await _ingredientService.GetAllPublicIngredients();
             if (result is null)
             {
                 return NotFound("No ingredients found.");
