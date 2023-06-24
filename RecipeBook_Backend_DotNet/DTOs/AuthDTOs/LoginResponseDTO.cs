@@ -1,4 +1,5 @@
-﻿using RecipeBook_Backend_DotNet.DTOs.UserDTOs;
+﻿using RecipeBook_Backend_DotNet.DTOs.RefreshTokenDTOs;
+using RecipeBook_Backend_DotNet.DTOs.UserDTOs;
 
 namespace RecipeBook_Backend_DotNet.DTOs.AuthDTOs
 {
@@ -6,6 +7,7 @@ namespace RecipeBook_Backend_DotNet.DTOs.AuthDTOs
         int Code,
         string Info,
         UserMinimalDTO? User,
-        string Token
+        string? Token,
+        RefreshTokenMinimalDTO? RefreshToken
         );
 }
