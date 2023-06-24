@@ -7,5 +7,6 @@ namespace RecipeBook_Backend_DotNet.Services.AuthServices
     {
         Task<AuthResponseDTO?> Register(UserRegisterDTO request);
         Task<LoginResponseDTO?> Login(UserLoginDTO request);
+        Task<LoginResponseDTO?> RefreshToken(RefreshRequestDTO request);
     }
 }
