@@ -97,6 +97,27 @@ namespace RecipeBook_Backend_DotNet.Services.IngredientServices
             return ingredientsDTO;
         }
 
+        public async Task<List<IngredientPackedDTO>?> GetAllPublicIngredients()
+        {
+            var ingredients = await _context.Ingredients
+                .Include(c => c.Recipe)
+                .Where(i => i.Recipe.Visibility == "public")
+                .ToListAsync();
+
+            if (ingredients is null)
+                return null;
+
+            List<IngredientPackedDTO> ingredientsDTO = ingredients.Select(ingredient => new IngredientPackedDTO
+            {
+                Id = ingredient.Id,
+                Name = ingredient.Name,
+                Recipe = new RecipeMinimalDTO { Id = ingredient.RecipeID }
+            }).ToList();
+
+            return ingredientsDTO;
+
+        }
+
         public async Task<List<IngredientPackedDTO>?> GetAllIngredientsByRecipe(int id)
         {
             var recipe = await _context.Recipes
@@ -105,6 +126,24 @@ namespace RecipeBook_Backend_DotNet.Services.IngredientServices
 
             if (recipe is null)
                 return null;
+            else if (recipe.Visibility == "private")
+            {
+                if (_httpContextAccessor.HttpContext != null)
+                {
+                    var currentUserRole = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                    if (currentUserRole != "admin")
+                    {
+                        var currentUserId = _httpContextAccessor.HttpContext.User.FindFirstValue("Id");
+                        if (currentUserId != recipe.UserId.ToString())
+                        {
+                            return null; // Forbidden: user has no rights to get someone else's private recipe's ingredients
+                        }
+
+                    }
+                }
+                else
+                    return null;
+            }
 
             RecipeMinimalDTO recipeDTO = new() { Id = id };
 
@@ -120,11 +159,30 @@ namespace RecipeBook_Backend_DotNet.Services.IngredientServices
 
         public async Task<IngredientPackedDTO?> GetIngredient(int id)
         {
-            var ingredient = await _context.Ingredients.FindAsync(id);
+            var ingredient = await _context.Ingredients
+                .Include(i => i.Recipe)
+                .FirstOrDefaultAsync(i => i.Id == id);
 
             if (ingredient is null)
                 return null;
-
+            else if (ingredient.Recipe.Visibility == "private")
+            {
+                if (_httpContextAccessor.HttpContext != null)
+                {
+                    var currentUserRole = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                    if (currentUserRole != "admin")
+                    {
+                        var currentUserId = _httpContextAccessor.HttpContext.User.FindFirstValue("Id");
+                        if (currentUserId != ingredient.Recipe.UserId.ToString())
+                        {
+                            return null; // Forbidden: user has no rights to get someone else's recipe's ingredient
+                        }
+                    }
+                }
+                else
+                    return null;
+            }
+            
             return new IngredientPackedDTO {
                 Id = ingredient.Id,
                 Name = ingredient.Name,
