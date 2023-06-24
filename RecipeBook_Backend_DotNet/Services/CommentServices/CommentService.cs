@@ -21,9 +21,22 @@ namespace RecipeBook_Backend_DotNet.Services.CommentServices
             if (recipe is null)
                 return null;
 
+
             var user = await _context.Users.FindAsync(request.UserId);
             if (user is null)
                 return null;
+            else if (_httpContextAccessor.HttpContext != null)
+            {
+                var currentUserRole = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                if (currentUserRole != "admin")
+                {
+                    var currentUserId = _httpContextAccessor.HttpContext.User.FindFirstValue("Id");
+                    if (currentUserId != request.UserId.ToString())
+                    {
+                        return null; // Forbidden: user has no rights to add comment as someone else
+                    }
+                }
+            }
 
             var newComment = new Comment { 
                 Text = request.Text,
@@ -104,6 +117,24 @@ namespace RecipeBook_Backend_DotNet.Services.CommentServices
 
             if (recipe is null)
                 return null;
+            else if (recipe.Visibility == "private")
+            {
+                if (_httpContextAccessor.HttpContext != null)
+                {
+                    var currentUserRole = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                    if (currentUserRole != "admin")
+                    {
+                        var currentUserId = _httpContextAccessor.HttpContext.User.FindFirstValue("Id");
+                        if (currentUserId != recipe.UserId.ToString())
+                        {
+                            return null; // Forbidden: user has no rights to get someone else's private recipe's comments
+                        }
+
+                    }
+                }
+                else
+                    return null;
+            }
 
             RecipeMinimalDTO recipeDTO = new() { Id = id };
 

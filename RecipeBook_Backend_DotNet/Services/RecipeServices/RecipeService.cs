@@ -239,6 +239,18 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
 
             if (user is null)
                 return null;
+            else if (_httpContextAccessor.HttpContext != null)
+            {
+                var currentUserRole = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                if (currentUserRole != "admin")
+                {
+                    var currentUserId = _httpContextAccessor.HttpContext.User.FindFirstValue("Id");
+                    if (currentUserId != request.UserId.ToString())
+                    {
+                        return null; // Forbidden: user has no rights to add recipe as someone else
+                    }
+                }
+            }
 
             var newRecipe = new Recipe
             {

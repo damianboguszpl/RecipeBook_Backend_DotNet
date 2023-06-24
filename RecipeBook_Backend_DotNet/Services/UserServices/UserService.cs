@@ -1,6 +1,7 @@
 ﻿using RecipeBook_Backend_DotNet.DTOs.LikeDTOs;
 using RecipeBook_Backend_DotNet.DTOs.RecipeDTOs;
 using RecipeBook_Backend_DotNet.DTOs.UserDTOs;
+using System.Security.Claims;
 
 namespace RecipeBook_Backend_DotNet.Services.UserServices
 {
@@ -8,40 +9,13 @@ namespace RecipeBook_Backend_DotNet.Services.UserServices
     {
         private readonly DataContext _context;
 
-        public UserService(DataContext context)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public UserService(DataContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
-
-        /*public async Task<UserMinimalDTO?> AddUser(UserCreateDTO request)
-        {
-            if(request.Username is null || request.Password is null)
-                return null;
-
-            var user = await _context.Users.
-                FirstOrDefaultAsync(user => user.Username == request.Username);
-
-            if (user == null)
-            {
-                var newUser = new User
-                {
-                    Username = request.Username,
-                    Password = request.Password,
-                    PermissionLevel = "user"
-                };
-                _context.Users.Add(newUser);
-                await _context.SaveChangesAsync();
-
-                var userDTO = new UserMinimalDTO
-                {
-                    Id = newUser.Id,
-                    Username = newUser.Username
-                };
-                return userDTO;
-            }
-            else
-                return null;
-        }*/
 
         public async Task<UserPackedDTO?> GetUser(int id)
         {
@@ -52,6 +26,18 @@ namespace RecipeBook_Backend_DotNet.Services.UserServices
 
             if (user is null)
                 return null;
+            else if (_httpContextAccessor.HttpContext != null)
+            {
+                var currentUserRole = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                if (currentUserRole != "admin")
+                {
+                    var currentUserId = _httpContextAccessor.HttpContext.User.FindFirstValue("Id");
+                    if (currentUserId != user.Id.ToString())
+                    {
+                        return null; // Forbidden: user has no rights to get other user's data
+                    }
+                }
+            }
 
             UserMinimalDTO userDTO = new() { Id = user.Id, Username = user.Username };
 
