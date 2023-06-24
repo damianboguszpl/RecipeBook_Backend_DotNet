@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecipeBook_Backend_DotNet.Data;
 
@@ -11,9 +12,11 @@ using RecipeBook_Backend_DotNet.Data;
 namespace RecipeBook_Backend_DotNet.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230624145238_UpdateUserModelRF2")]
+    partial class UpdateUserModelRF2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,9 +194,15 @@ namespace RecipeBook_Backend_DotNet.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.ToTable("RefreshTokens");
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("RefreshToken");
                 });
 
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.User", b =>
@@ -212,18 +221,11 @@ namespace RecipeBook_Backend_DotNet.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("RefreshTokenId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RefreshTokenId")
-                        .IsUnique()
-                        .HasFilter("[RefreshTokenId] IS NOT NULL");
 
                     b.ToTable("Users");
                 });
@@ -296,13 +298,15 @@ namespace RecipeBook_Backend_DotNet.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.User", b =>
+            modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.RefreshToken", b =>
                 {
-                    b.HasOne("RecipeBook_Backend_DotNet.Models.RefreshToken", "RefreshToken")
-                        .WithOne("User")
-                        .HasForeignKey("RecipeBook_Backend_DotNet.Models.User", "RefreshTokenId");
+                    b.HasOne("RecipeBook_Backend_DotNet.Models.User", "User")
+                        .WithOne("RefreshToken")
+                        .HasForeignKey("RecipeBook_Backend_DotNet.Models.RefreshToken", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("RefreshToken");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.Category", b =>
@@ -319,16 +323,13 @@ namespace RecipeBook_Backend_DotNet.Migrations
                     b.Navigation("Likes");
                 });
 
-            modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.RefreshToken", b =>
-                {
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.User", b =>
                 {
                     b.Navigation("Likes");
 
                     b.Navigation("Recipes");
+
+                    b.Navigation("RefreshToken");
                 });
 #pragma warning restore 612, 618
         }

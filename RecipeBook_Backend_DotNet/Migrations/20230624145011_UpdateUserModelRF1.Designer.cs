@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecipeBook_Backend_DotNet.Data;
 
@@ -11,9 +12,11 @@ using RecipeBook_Backend_DotNet.Data;
 namespace RecipeBook_Backend_DotNet.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230624145011_UpdateUserModelRF1")]
+    partial class UpdateUserModelRF1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -193,7 +196,7 @@ namespace RecipeBook_Backend_DotNet.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshToken");
                 });
 
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.User", b =>
@@ -212,7 +215,7 @@ namespace RecipeBook_Backend_DotNet.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("RefreshTokenId")
+                    b.Property<int>("RefreshTokenId")
                         .HasColumnType("int");
 
                     b.Property<string>("Username")
@@ -222,8 +225,7 @@ namespace RecipeBook_Backend_DotNet.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("RefreshTokenId")
-                        .IsUnique()
-                        .HasFilter("[RefreshTokenId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -300,7 +302,9 @@ namespace RecipeBook_Backend_DotNet.Migrations
                 {
                     b.HasOne("RecipeBook_Backend_DotNet.Models.RefreshToken", "RefreshToken")
                         .WithOne("User")
-                        .HasForeignKey("RecipeBook_Backend_DotNet.Models.User", "RefreshTokenId");
+                        .HasForeignKey("RecipeBook_Backend_DotNet.Models.User", "RefreshTokenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("RefreshToken");
                 });

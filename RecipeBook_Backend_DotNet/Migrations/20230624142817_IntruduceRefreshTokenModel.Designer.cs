@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecipeBook_Backend_DotNet.Data;
 
@@ -11,9 +12,11 @@ using RecipeBook_Backend_DotNet.Data;
 namespace RecipeBook_Backend_DotNet.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230624142817_IntruduceRefreshTokenModel")]
+    partial class IntruduceRefreshTokenModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -173,29 +176,6 @@ namespace RecipeBook_Backend_DotNet.Migrations
                     b.ToTable("Recipes");
                 });
 
-            modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.RefreshToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("Expires")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("RefreshTokens");
-                });
-
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -212,18 +192,21 @@ namespace RecipeBook_Backend_DotNet.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("RefreshTokenId")
-                        .HasColumnType("int");
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("TokenCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TokenExpires")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RefreshTokenId")
-                        .IsUnique()
-                        .HasFilter("[RefreshTokenId] IS NOT NULL");
 
                     b.ToTable("Users");
                 });
@@ -296,15 +279,6 @@ namespace RecipeBook_Backend_DotNet.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.User", b =>
-                {
-                    b.HasOne("RecipeBook_Backend_DotNet.Models.RefreshToken", "RefreshToken")
-                        .WithOne("User")
-                        .HasForeignKey("RecipeBook_Backend_DotNet.Models.User", "RefreshTokenId");
-
-                    b.Navigation("RefreshToken");
-                });
-
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.Category", b =>
                 {
                     b.Navigation("Recipes");
@@ -317,11 +291,6 @@ namespace RecipeBook_Backend_DotNet.Migrations
                     b.Navigation("Ingredients");
 
                     b.Navigation("Likes");
-                });
-
-            modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.RefreshToken", b =>
-                {
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RecipeBook_Backend_DotNet.Models.User", b =>
