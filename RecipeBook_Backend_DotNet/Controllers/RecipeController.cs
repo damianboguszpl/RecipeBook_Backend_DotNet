@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RecipeBook_Backend_DotNet.DTOs.IngredientDTOs;
 using RecipeBook_Backend_DotNet.DTOs.RecipeDTOs;
-using RecipeBook_Backend_DotNet.Models;
 using RecipeBook_Backend_DotNet.Services.RecipeServices;
-using System.Net;
-using System.Xml.Linq;
 
 namespace RecipeBook_Backend_DotNet.Controllers
 {
@@ -42,7 +38,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{id}"), Authorize]
+        [HttpGet("{id}")]
         public async Task<ActionResult<RecipePackedDTO>> GetRecipe(int id)
         {
             var result = await _recipeService.GetRecipe(id);

@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RecipeBook_Backend_DotNet.DTOs.CommentDTOs;
-using RecipeBook_Backend_DotNet.DTOs.IngredientDTOs;
 using RecipeBook_Backend_DotNet.Services.CommentServices;
-using RecipeBook_Backend_DotNet.Services.UserServices;
-using System.Security.Claims;
 
 namespace RecipeBook_Backend_DotNet.Controllers
 {
