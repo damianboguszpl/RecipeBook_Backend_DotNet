@@ -14,5 +14,12 @@ namespace RecipeBook_Backend_DotNet.Models
         //public List<Comment> Comments { get; set; }
         [JsonIgnore]
         public List<Like>? Likes { get; set; }
+
+        /*public string RefreshToken { get; set; } = string.Empty;
+        public DateTime TokenCreated { get; set; }
+        public DateTime TokenExpires { get; set; }*/
+        public int? RefreshTokenId { get; set; }
+        [JsonIgnore]
+        public RefreshToken? RefreshToken { get; set; }
     }
 }
