@@ -85,6 +85,71 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
             return recipesDTO;
         }
 
+        public async Task<List<RecipePackedDTO>?> GetAllPublicRecipes()
+        {
+            List<RecipePackedDTO> recipesDTO = new();
+
+            var recipes = await _context.Recipes
+                .Include(c => c.User)
+                .Include(c => c.Ingredients)
+                .Include(c => c.Category)
+                .Include(c => c.Likes)
+                .Include(c => c.Comments)
+                .Where(r => r.Visibility == "public")
+                .ToListAsync();
+
+            if (recipes is null)
+                return null;
+
+            foreach (var recipe in recipes)
+            {
+                UserMinimalDTO userDTO = new() { Id = recipe.User.Id, Username = recipe.User.Username };
+                CategoryMinimalDTO categoryDTO = new() { Id = recipe.Category.Id, Name = recipe.Category.Name };
+                RecipeMinimalDTO recipeDTO = new() { Id = recipe.Id };
+
+                List<LikeMinimalDTO> likesDTO = recipe.Likes?.Select(like => new LikeMinimalDTO
+                {
+                    Id = like.Id,
+                    UserId = like.UserId,
+                    RecipeId = like.RecipeId
+                }).ToList() ?? new List<LikeMinimalDTO>();
+
+                List<IngredientMinimalDTO> ingredientsDTO = recipe.Ingredients?.Select(ingredient => new IngredientMinimalDTO
+                {
+                    Id = ingredient.Id,
+                    Name = ingredient.Name
+                })
+                    .ToList() ?? new List<IngredientMinimalDTO>();
+
+                List<CommentMinimalDTO> commentsDTO = recipe.Comments?
+                    .Select(comment => new CommentMinimalDTO
+                    {
+                        Id = comment.Id,
+                        Text = comment.Text,
+                        User = userDTO
+                    })
+                    .ToList() ?? new List<CommentMinimalDTO>();
+
+                recipesDTO.Add(new RecipePackedDTO
+                {
+                    Id = recipe.Id,
+                    Name = recipe.Name,
+                    RecipeDescription = recipe.RecipeDescription,
+                    PrepareTime = recipe.PrepareTime,
+                    CookTime = recipe.CookTime,
+                    AuthorsRating = recipe.AuthorsRating,
+                    PublishingStatus = recipe.PublishingStatus,
+                    Visibility = recipe.Visibility,
+                    Category = categoryDTO,
+                    User = userDTO,
+                    Comments = commentsDTO,
+                    Likes = likesDTO,
+                    Ingredients = ingredientsDTO,
+                });
+            }
+            return recipesDTO;
+        }
+
         public async Task<RecipePackedDTO?> GetRecipe(int id)
         {
             var recipe = await _context.Recipes
@@ -97,7 +162,26 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
 
             if (recipe == null)
                 return null;
+            else
+            if (recipe.Visibility == "private")
+            {
+                if (_httpContextAccessor.HttpContext != null)
+                {
+                    var currentUserRole = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                    if (currentUserRole != "admin")
+                    {
+                        var currentUserId = _httpContextAccessor.HttpContext.User.FindFirstValue("Id");
+                        if (currentUserId != recipe.UserId.ToString())
+                        {
+                            return null; // Forbidden: user has no rights to get someone else's private recipe
+                        }
 
+                    }
+                }
+                else
+                    return null;
+            }
+                
             UserMinimalDTO userDTO = new() { Id = recipe.User.Id, Username = recipe.User.Username };
             CategoryMinimalDTO categoryDTO = new() { Id = recipe.Category.Id, Name = recipe.Category.Name };
             RecipeMinimalDTO recipeMinimalDTO = new() { Id = recipe.Id };
@@ -265,13 +349,105 @@ namespace RecipeBook_Backend_DotNet.Services.RecipeServices
                     }
                 }
 
-                // Remove Recip itself
+                // Remove Recipe itself
                 _context.Recipes.Remove(recipe);
 
                 await _context.SaveChangesAsync();
                 var recipeDTO = new RecipeMinimalDTO { Id = recipe.Id };
                 return recipeDTO;
             }
+        }
+
+        public async Task<List<RecipePackedDTO>?> GetAllRecipesByUser(int id)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(r => r.Id == id);
+            
+            if (user is null)
+                return null;
+            else
+                if (_httpContextAccessor.HttpContext != null)
+                {
+                    var currentUserRole = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                    if (currentUserRole != "admin")
+                    {
+                        var currentUserId = _httpContextAccessor.HttpContext.User.FindFirstValue("Id");
+                        if (currentUserId != id.ToString())
+                        {
+                            return null; // Forbidden: user has no rights to get someone else's recipes
+                        }
+                    }
+                }
+
+            List<RecipePackedDTO> recipesDTO = new();
+
+            UserMinimalDTO userDTO = new() { Id = user.Id, Username = user.Username };
+
+            var recipes = await _context.Recipes
+                        .Include(c => c.Ingredients)
+                        .Include(c => c.Category)
+                        .Include(c => c.Likes)
+                        .Include(c => c.Comments)
+                        .Where(r => r.UserId == user.Id)
+                        .ToListAsync();
+
+            if (recipes == null)
+                return null;
+
+            if (user.Recipes != null && user.Recipes.Count > 0)
+            {
+                foreach (var recipe in recipes)
+                {
+                    CategoryMinimalDTO categoryDTO = new()
+                    {
+                        Id = recipe.CategoryId,
+                        Name = recipe.Category.Name
+                    };
+
+                    List<CommentMinimalDTO> commentsDTO = recipe.Comments?.
+                        Select(c => new CommentMinimalDTO
+                        {
+                            Id = c.Id,
+                            Text = c.Text,
+                            User = userDTO
+                        }).ToList() ?? new List<CommentMinimalDTO>();
+
+                    List<LikeMinimalDTO> likesDTO = recipe.Likes?.
+                        Select(l => new LikeMinimalDTO
+                        {
+                            Id = l.Id,
+                            RecipeId = l.RecipeId,
+                            UserId = l.UserId
+                        }).ToList() ?? new List<LikeMinimalDTO>();
+
+                    List<IngredientMinimalDTO> ingredientsDTO = recipe.Ingredients?.
+                        Select(i => new IngredientMinimalDTO
+                        {
+                            Id = i.Id,
+                            Name = i.Name
+                        }).ToList() ?? new List<IngredientMinimalDTO>();
+
+                    recipesDTO.Add(new RecipePackedDTO
+                    {
+                        Id = recipe.Id,
+                        Name = recipe.Name,
+                        RecipeDescription = recipe.RecipeDescription,
+                        PrepareTime = recipe.PrepareTime,
+                        CookTime = recipe.CookTime,
+                        AuthorsRating = recipe.AuthorsRating,
+                        PublishingStatus = recipe.PublishingStatus,
+                        Visibility = recipe.Visibility,
+                        Category = categoryDTO,
+                        User = userDTO,
+                        Comments = commentsDTO,
+                        Likes = likesDTO,
+                        Ingredients = ingredientsDTO,
+                    });
+                }
+                return recipesDTO;
+            }
+            else
+                return null;
         }
     }
 }

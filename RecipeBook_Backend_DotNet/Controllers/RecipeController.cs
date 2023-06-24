@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RecipeBook_Backend_DotNet.DTOs.IngredientDTOs;
 using RecipeBook_Backend_DotNet.DTOs.RecipeDTOs;
 using RecipeBook_Backend_DotNet.Models;
 using RecipeBook_Backend_DotNet.Services.RecipeServices;
@@ -19,7 +20,7 @@ namespace RecipeBook_Backend_DotNet.Controllers
             _recipeService = recipeService;
         }
 
-        [HttpGet]
+        [HttpGet, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<RecipeMinimalDTO>>> GetAllRecipes()
         {
             var result = await _recipeService.GetAllRecipes();
@@ -30,13 +31,35 @@ namespace RecipeBook_Backend_DotNet.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("public")]
+        public async Task<ActionResult<List<RecipeMinimalDTO>>> GetAllPublicRecipes()
+        {
+            var result = await _recipeService.GetAllPublicRecipes();
+            if (result is null)
+            {
+                return NotFound("No public recipes found.");
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("{id}"), Authorize]
         public async Task<ActionResult<RecipePackedDTO>> GetRecipe(int id)
         {
             var result = await _recipeService.GetRecipe(id);
             if (result is null)
             {
                 return NotFound("This recipe doesn't exist.");
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("user/{id}"), Authorize]
+        public async Task<ActionResult<List<IngredientPackedDTO>>> GetAllRecipesByUser(int id)
+        {
+            var result = await _recipeService.GetAllRecipesByUser(id);
+            if (result is null)
+            {
+                return NotFound("No recipes found.");
             }
             return Ok(result);
         }
