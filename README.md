@@ -12,6 +12,6 @@ Access to individual endpoints depends ont the user's authorization level (based
 
 #1) Application is in development. It's set of functionalities will be expanded.
 
-#2) Frontend app is planed to be based on Angular framework.
+#2) Frontend app is planned to be based on Angular framework.
 
 
