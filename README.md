@@ -8,7 +8,7 @@ The app implements REST API service, enabling it's users to manage data stored i
 Access to individual endpoints depends ont the user's authorization level (based on roles like 'user' or 'admin').
 
 
-## Discaimer
+## Disclaimers
 
 #1) Application is in development. It's set of functionalities will be expanded.
 
